@@ -1,5 +1,4 @@
-from re import M
-from typing import FrozenSet
+import csv
 from bs4 import BeautifulSoup
 
 frostbite_members = {
@@ -14,15 +13,40 @@ frostbite_members = {
     "Zain": "140858227049889793",
 }
 
-html = open("data.html")
+csv_file = "messages.csv"
+html = open("frostbite.html")
 soup = BeautifulSoup(html, "html.parser")
 
-data = []
 
-for member in frostbite_members:
+def get_all_user_messages(member, member_id):
+    messages = []
     message_div = soup.find_all("div", {"class": "chatlog__message-group"})
-    member_title = soup.find_all("span", {"data-user-id": frostbite_members[member]})
+    member_title = soup.find_all("span", {"data-user-id": member_id})
     if message_div and member_title:
         member_messages = soup.find_all("span", {"class": "markdown"})
         for message in member_messages:
-            print(f"{member}: {message.text}")
+            messages.append(get_user_message_row(member, message))
+    return messages
+
+
+def get_user_message_row(member, message):
+    # print(f"{member}: {message.text}")
+    row = [member, message.text]
+    return row
+
+
+def write_all_messages_to_file():
+    with open(csv_file, "w", newline="") as f:
+        field_names = ["Member", "Message"]
+
+        writer = csv.DictWriter(f, fieldnames=field_names)
+        writer.writeheader()
+
+        for member in frostbite_members:
+            messages = get_all_user_messages(member, frostbite_members[member])
+            for message in messages:
+                writer.writerow({"Member": message[0], "Message": message[1]})
+
+
+if __name__ == "__main__":
+    write_all_messages_to_file()
