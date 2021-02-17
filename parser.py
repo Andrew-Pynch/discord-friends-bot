@@ -35,18 +35,36 @@ def get_user_message_row(member, message):
     return row
 
 
-def write_all_messages_to_file():
-    with open(csv_file, "w", newline="") as f:
+def write_message_to_member_file(member, messages):
+    with open(f'data/{member}_messages.csv', "w", newline="") as f:
         field_names = ["Member", "Message"]
 
         writer = csv.DictWriter(f, fieldnames=field_names)
         writer.writeheader()
+        for message in messages:
+            writer.writerow({"Member": message[0], "Message": message[1]})
 
-        for member in frostbite_members:
-            messages = get_all_user_messages(member, frostbite_members[member])
+
+def write_all_messages_to_files():
+    for member in frostbite_members:
+        messages = get_all_user_messages(member, frostbite_members[member])
+        write_message_to_member_file(member, messages)
+
+def write_all_messages_single_file():
+    for member in frostbite_members:
+        messages = get_all_user_messages(member, frostbite_members[member])
+        with open(f'data/messages.csv', "w", newline="") as f:
+            field_names = ["Member", "Message"]
+
+            writer = csv.DictWriter(f, fieldnames=field_names)
+            writer.writeheader()
             for message in messages:
                 writer.writerow({"Member": message[0], "Message": message[1]})
+    
+            
 
 
+    
 if __name__ == "__main__":
-    write_all_messages_to_file()
+    # write_all_messages_to_files()
+    write_all_messages_single_file()
